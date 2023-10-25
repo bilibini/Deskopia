@@ -1,0 +1,59 @@
+assert(_WIN10_LATER,"不支持 Win10 以前的系统");
+import win.ui;
+import win.ui.menu;
+import win.util.tray;
+import dotNet.desktop;
+import console.int; 
+import fsys.time;
+/*DSG{{*/
+mainForm = win.form(text="回到主桌面";right=554;bottom=374)
+mainForm.add()
+/*}}*/
+
+//创建托盘图标
+mainForm.tray = win.util.tray(mainForm);
+var liveIndex=1;
+var liveStamp=time.stamp();
+
+mainForm.onTrayMessage = {
+	[0x205/*_WM_RBUTTONUP*/  ] = function(wParam){ 
+	    win.setForeground(mainForm.hwnd)
+		import win.ui.menu;
+		
+		mainForm.popmenu = win.ui.popmenu(mainForm);//创建弹出菜单
+		mainForm.popmenu.add('&前一个',function(id){
+			if(dotNet.desktop.index()!=1){
+				dotNet.desktop.current().Left.MakeVisible();//切换到上一个桌面
+			}
+		});
+		mainForm.popmenu.add('&后一个',function(id){
+			dotNet.desktop.current().Right.MakeVisible();//切换到下一个桌面 
+		});
+		mainForm.popmenu.add();//分隔线
+		mainForm.popmenu.add('&退出',function(id){ mainForm.close() })	    
+	    		
+	    mainForm.popmenu.popup();
+	    mainForm.popmenu.close();
+	};
+	[0x202/*_WM_LBUTTONUP*/] = function(wParam){ 
+		..liveIndex=dotNet.desktop.index()
+		var stamp = time.stamp(); 
+		..liveStamp = time.stamp();
+		console.log(stamp);
+		dotNet.desktop.get(1).MakeVisible();//回到主页
+	};
+	[0x203/*_WM_LBUTTONDBLCLK*/] = function(wParam){ 
+		win.msgbox(..liveIndex);
+		dotNet.desktop.get(..liveIndex).MakeVisible();//回到桌面
+	};
+	[0x404/*_PARAM_DESTROY*/] = function(wParam){ 
+		
+	};
+	[0x405/*_PARAM_CLICKED*/] = function(wParam){ 
+		
+	};
+}
+
+
+mainForm.show(false);
+return win.loopMessage();
