@@ -12,8 +12,7 @@ mainForm.add()
 
 //创建托盘图标
 mainForm.tray = win.util.tray(mainForm);
-var liveIndex=1;
-var liveStamp=time.stamp();
+var liveIndex=2;
 
 mainForm.onTrayMessage = {
 	[0x205/*_WM_RBUTTONUP*/  ] = function(wParam){ 
@@ -21,13 +20,27 @@ mainForm.onTrayMessage = {
 		import win.ui.menu;
 		
 		mainForm.popmenu = win.ui.popmenu(mainForm);//创建弹出菜单
+		
+		mainForm.popmenu.add('&开摸',function(id){
+			if(dotNet.desktop.index(dotNet.desktop.last())==1){
+				dotNet.desktop('桌面')
+			}
+			dotNet.desktop.get(liveIndex).MakeVisible();
+		});
+		mainForm.popmenu.add();//分隔线
 		mainForm.popmenu.add('&前一个',function(id){
 			if(dotNet.desktop.index()!=1){
 				dotNet.desktop.current().Left.MakeVisible();//切换到上一个桌面
 			}
 		});
 		mainForm.popmenu.add('&后一个',function(id){
-			dotNet.desktop.current().Right.MakeVisible();//切换到下一个桌面 
+			var lastdes=dotNet.desktop.index(dotNet.desktop.last());
+			if(lastdes==1){
+				dotNet.desktop('桌面')
+			}
+			if(dotNet.desktop.index()!=lastdes){
+				dotNet.desktop.current().Right.MakeVisible();//切换到下一个桌面 
+			}
 		});
 		mainForm.popmenu.add();//分隔线
 		mainForm.popmenu.add('&退出',function(id){ mainForm.close() })	    
@@ -36,15 +49,10 @@ mainForm.onTrayMessage = {
 	    mainForm.popmenu.close();
 	};
 	[0x202/*_WM_LBUTTONUP*/] = function(wParam){ 
-		..liveIndex=dotNet.desktop.index()
-		var stamp = time.stamp(); 
-		..liveStamp = time.stamp();
-		console.log(stamp);
 		dotNet.desktop.get(1).MakeVisible();//回到主页
 	};
 	[0x203/*_WM_LBUTTONDBLCLK*/] = function(wParam){ 
-		win.msgbox(..liveIndex);
-		dotNet.desktop.get(..liveIndex).MakeVisible();//回到桌面
+
 	};
 	[0x404/*_PARAM_DESTROY*/] = function(wParam){ 
 		
