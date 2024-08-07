@@ -6,21 +6,29 @@ import dotNet.desktop;
 import console.int;
 import fsys.time;
 /*DSG{{*/
-mainForm = win.form(text="回到主桌面";right=554;bottom=374)
-mainForm.add()
+mainForm = win.form(text="WorkGuardian";right=538;bottom=115;minimize=1)
+mainForm.add(
+button={cls="button";text="设置为系统热键";left=267;top=38;right=503;bottom=69;z=2};
+hotkey={cls="hotkey";left=38;top=45;right=257;bottom=65;edge=1;z=1}
+)
 /*}}*/
 
 //创建托盘图标
 mainForm.tray = win.util.tray(mainForm);
+mainForm.show(false);
 var liveIndex = 2;
+
+mainForm.onClose = function(hwnd,message,wParam,lParam){
+	mainForm.show(false);
+    return 1; 
+}
 
 mainForm.onTrayMessage = {
 	[0x205 /*_WM_RBUTTONUP*/ ] = function(wParam) {
         win.setForeground(mainForm.hwnd)
+        mainForm.show(false);
         import win.ui.menu;
-        
         mainForm.popmenu = win.ui.popmenu(mainForm); //创建弹出菜单
-        
         mainForm.popmenu.add('&开摸', function(id) {
             if (dotNet.desktop.index(dotNet.desktop.last()) == 1) {
                 dotNet.desktop('桌面')
@@ -43,12 +51,16 @@ mainForm.onTrayMessage = {
             }
         });
         mainForm.popmenu.add(); //分隔线
+        mainForm.popmenu.add('&设置', function(id) {
+            mainForm.show(true);
+        });
+        mainForm.popmenu.add(); //分隔线
         mainForm.popmenu.add('&退出', function(id) {
-            mainForm.close()
+            ::User32.DestroyWindow()
         })
-        
         mainForm.popmenu.popup();
         mainForm.popmenu.close();
+        
     };
 	[0x202 /*_WM_LBUTTONUP*/ ] = function(wParam) {
         dotNet.desktop.get(1).MakeVisible(); //回到主页
@@ -63,6 +75,18 @@ mainForm.onTrayMessage = {
         
     };
 }
+var hkId; 
+mainForm.button.oncommand = function(id,event){
+	mainForm.show(false);
+	if(hkId){
+		mainForm.unreghotkey(hkId);
+	};
+	hkId = mainForm.reghotkey(
+		function(id,mod,vk){
+			dotNet.desktop.get(1).MakeVisible();
+		}
+		,mainForm.hotkey.gethotkey()
+	);
+}
 
-mainForm.show(false);
 return win.loopMessage();
